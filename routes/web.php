@@ -15,7 +15,7 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 $router->group(['prefix' => 'update'], function () use ($router) {
-    $router->get('/count', 'AssetUpdateController@count');
+    $router->get('/count', 'AssetUpdateController@getCount');
     $router->get('/execute', 'AssetUpdateController@update');
 });
 
