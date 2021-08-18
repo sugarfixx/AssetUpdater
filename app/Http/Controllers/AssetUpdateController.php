@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class AssetUpdateController extends Controller
 {
-    protected $companyId =1324004;
+    protected $companyId = 1324004;
     protected $jwtToken = 'Bearer';
     protected $mapUrl = 'https://map-api-eu1.mediabank.me/asset/';
 
@@ -26,7 +26,7 @@ class AssetUpdateController extends Controller
         try {
             DB::connection('pgsql')->getPdo();
         } catch (\Exception $e) {
-            die("Could not connect to the database.  Please check your configuration. error:" . $e );
+            die("Could not connect to the database.  Please check your configuration. error:" . $e);
         }
         // $assets = DB::table('asset')->where('assetcompany_id', $this->companyId)->count();
         $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->get();
@@ -44,11 +44,16 @@ class AssetUpdateController extends Controller
             $queue->item = $message;
             $queue->done = false;
             if ($queue->save()) {
-                $processed ++;
+                $processed++;
             }
         }
 
         return response()->json(['message' => $processed . ' items added to queue']);
+    }
+
+    public function viewQueue()
+    {
+        return response()->json(Queue::where('done', false)->get());
     }
 
 
