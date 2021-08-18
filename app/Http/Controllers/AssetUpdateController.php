@@ -21,7 +21,8 @@ class AssetUpdateController extends Controller
 {
     protected $companyId = 1324004;
     protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MjkzMjAzMTgsIm5iZiI6MTYyOTMyMDMxOCwiZXhwIjoxNjI5MzIzOTE4LCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJabVUxWmpabE16aGtaREE1TkRnek5HWXhZalJoWTJRME4yVTNZakkxT0RjME5qSXgiLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiODY0MDA0IiwiY29tcGFueV9uYW1lIjoiREFaTiIsInRhZ3NfYXBpX3Rva2VuIjpudWxsLCJyb2xlcyI6WzEsMTAwMCwxMDA0LDEwMDYsMzUsMzYsMzNdLCJyZWdpb24iOiJldS1oaWx2ZXJzdW0tMSJ9fQ.UeXQWYjS7oD-e02pK-Vaft3c7Qa2QlCRLZQJRNrtf7A';
-    protected $mapUrl = 'https://map-api-eu1.mediabank.me/asset/';
+    protected $baseUri = 'https://map-api-eu1.mediabank.me/';
+    protected $resourceUrl = 'asset/';
 
     // select count(assetid) from asset where assetcompany_id = 1324004;
     public function getCount()
@@ -69,7 +70,13 @@ class AssetUpdateController extends Controller
             $item = json_decode($entry->item);
             $assetId = $item->assetId;
             if ($this->callMapApi($assetId) !== false) {
-                $message = 'Success: Asset ' . $assetId .' updated through map api';
+                $entry->done = true;
+                if ($entry->save()) {
+                    $message = 'Success: Asset ' . $assetId .' updated through map api';
+                } else {
+                    $message = 'Success with incident: Asset ' . $assetId .' updated through map api but Queue done field update failed';
+                }
+
             } else {
                 $message = 'Error: Asset ' . $assetId .' failed to be updated through map api';
             }
@@ -80,7 +87,7 @@ class AssetUpdateController extends Controller
 
     public function callMapApi($assetId)
     {
-        $client = new Client();
+        $client = new Client(['base_uri' => $this->baseUri]);
         $request = [
             'headers' => [
                 'Authorization' => $this->jwtToken,
@@ -88,13 +95,13 @@ class AssetUpdateController extends Controller
             ],
             'form_params' => [
                 'id' => $assetId,
-                'assetmeta' => json_encode(['updatedBy' => 'AssetUpdater']),
+                'metadata' => json_encode(['updatedBy' => 'AssetUpdater']),
                 'notify' => 0
             ]
         ];
 
         try {
-            $response = $client->request('PUT', $this->mapUrl, $request);
+            $response = $client->request('PUT', $this->resourceUrl, $request);
             if ($response->getStatusCode()== 200 ) {
                 return true;
             } else {
