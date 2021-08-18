@@ -16,6 +16,7 @@ $router->get('/', function () use ($router) {
 });
 $router->group(['prefix' => 'update'], function () use ($router) {
     $router->get('/count', 'AssetUpdateController@getCount');
+    $router->get('/build', 'AssetUpdateController@buildQueue');
     $router->get('/execute', 'AssetUpdateController@update');
 });
 

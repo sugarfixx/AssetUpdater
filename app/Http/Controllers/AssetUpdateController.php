@@ -33,9 +33,15 @@ class AssetUpdateController extends Controller
     }
 
 
+    public function buildQueue()
+    {
+        $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->;
+
+        return response()->json($assets);
+    }
 
 
-    public function update()
+    public function runQueue()
     {
         $assets = Asset::where('assetcompany_id', $this->companyId)->get();
 
