@@ -37,20 +37,25 @@ class AssetUpdateController extends Controller
     public function buildQueue()
     {
         $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->limit(2)->pluck('assetid');
+        $processed = 0;
         foreach ($assets as $asset) {
             $message = json_encode(['assetId' => $asset]);
             $queue = new Queue();
             $queue->item = $message;
             $queue->done = false;
+            if ($queue->save()) {
+                $processed ++;
+            }
         }
 
-        return response()->json($assets);
+        return response()->json(['message' => $processed . ' items added to queue']);
     }
 
 
     public function runQueue()
     {
-        $assets = Asset::where('assetcompany_id', $this->companyId)->get();
+        $queue = Queue::where('done', 'false')->limit(500);
+
 
     }
 
