@@ -9,7 +9,9 @@
 namespace App;
 
 
-class Queue
-{
+use Illuminate\Database\Eloquent\Model;
 
+class Queue extends Model
+{
+    protected $connection = 'mysql';
 }

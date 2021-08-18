@@ -23,12 +23,14 @@ class AssetUpdateController extends Controller
     public function getCount()
     {
 
-        $assets = DB::table('asset')->where('assetcompany_id', $this->companyId)->count();
-        // $assets = Asset::where('assetcompany_id', $this->companyId)->get();
-        var_dump($assets);
+        // $assets = DB::table('asset')->where('assetcompany_id', $this->companyId)->count();
+        $assets = Asset::where('assetcompany_id', $this->companyId)->get();
+        var_dump(count($assets));
     }
 
-    
+
+
+
     public function update()
     {
         $assets = Asset::where('assetcompany_id', $this->companyId)->get();

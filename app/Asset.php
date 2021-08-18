@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asset extends Model
 {
+    protected $connection = 'pgsql';
     protected $table = 'asset';
 
 }
