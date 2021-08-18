@@ -41,11 +41,11 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST_2', '127.0.0.1'),
-            'port' => env('DB_PORT_2', 3306),
-            'database' => env('DB_DATABASE_2', 'forge'),
-            'username' => env('DB_USERNAME_2', 'forge'),
-            'password' => env('DB_PASSWORD_2', ''),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', 3306),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
@@ -57,11 +57,11 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', 5432),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
+            'host' => env('DB_HOST_EXT', '127.0.0.1'),
+            'port' => env('DB_PORT_EXT', 5432),
+            'database' => env('DB_DATABASE_EXT', 'forge'),
+            'username' => env('DB_USERNAME_EXT', 'forge'),
+            'password' => env('DB_PASSWORD_EXT', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => env('DB_PREFIX', ''),
             'schema' => env('DB_SCHEMA', 'public'),

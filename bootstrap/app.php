@@ -60,7 +60,7 @@ $app->singleton(
 */
 
 $app->configure('app');
-
+$app->configure('database');
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -111,5 +111,6 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
+
 
 return $app;

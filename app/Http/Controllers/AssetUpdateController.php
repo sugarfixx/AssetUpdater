@@ -22,10 +22,14 @@ class AssetUpdateController extends Controller
     // select count(assetid) from asset where assetcompany_id = 1324004;
     public function getCount()
     {
-
+        try {
+            DB::connection('pgsql')->getPdo();
+        } catch (\Exception $e) {
+            die("Could not connect to the database.  Please check your configuration. error:" . $e );
+        }
         // $assets = DB::table('asset')->where('assetcompany_id', $this->companyId)->count();
-        $assets = Asset::where('assetcompany_id', $this->companyId)->get();
-        var_dump(count($assets));
+        $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->get();
+        return count($assets);
     }
 
 
