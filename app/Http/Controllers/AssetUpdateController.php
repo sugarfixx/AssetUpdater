@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 
 use App\Asset;
+use App\Queue;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,13 @@ class AssetUpdateController extends Controller
 
     public function buildQueue()
     {
-        $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->;
+        $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->limit(2)->pluck('assetid');
+        foreach ($assets as $asset) {
+            $message = json_encode(['assetId' => $asset]);
+            $queue = new Queue();
+            $queue->item = $message;
+            $queue->done = false;
+        }
 
         return response()->json($assets);
     }

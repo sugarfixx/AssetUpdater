@@ -14,4 +14,9 @@ use Illuminate\Database\Eloquent\Model;
 class Queue extends Model
 {
     protected $connection = 'mysql';
+
+    protected $casts = [
+        'item' => 'array'
+    ];
+
 }
