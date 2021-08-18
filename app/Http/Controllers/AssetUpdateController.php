@@ -59,8 +59,12 @@ class AssetUpdateController extends Controller
 
     public function runQueue()
     {
-        $queue = Queue::where('done', 'false')->limit(500);
+        $queue = Queue::where('done', 'false')->take(1)->get();
 
+        foreach ($queue as $entry)  {
+            $item = json_decode($entry->item);
+            $assetId = $item->assetId;
+        }
 
     }
 
@@ -78,5 +82,6 @@ class AssetUpdateController extends Controller
             'allow_redirects' => false,
             'timeout'         => 5
         ]);
+        
     }
 }
