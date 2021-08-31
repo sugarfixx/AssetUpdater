@@ -14,6 +14,9 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+$router->get('/poll', function () {
+    return view('poll');
+});
 $router->group(['prefix' => 'update'], function () use ($router) {
     $router->get('/count', 'AssetUpdateController@getCount');
     $router->get('/build', 'AssetUpdateController@buildQueue');
