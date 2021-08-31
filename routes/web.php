@@ -21,5 +21,6 @@ $router->group(['prefix' => 'update'], function () use ($router) {
 
 $router->group(['prefix' => 'queue'], function () use ($router) {
     $router->get('/view','AssetUpdateController@viewQueue');
+    $router->get('/delete','AssetUpdateController@deleteQueue');
     $router->get('/run','AssetUpdateController@runQueue');
 });
