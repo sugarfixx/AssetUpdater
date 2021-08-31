@@ -11,6 +11,8 @@ namespace App\Library;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
+
+use GuzzleHttp\Psr7\Utils;
 use Illuminate\Support\Facades\Log;
 
 class SportRadarIntegrationClient
@@ -144,24 +146,11 @@ class SportRadarIntegrationClient
     public function getMetadata($assetMeta)
     {
         $client = new Client();
-        $request = [
-            'headers' => [
-                // 'accept' => 'application/json',
-                'Content-Type'=> 'application/json'
-            ],
-            'json' => [
-                'body' => $assetMeta
-            ]
-        ];
-        $request = ['body' => $assetMeta];
+        $request = ['body' => $this->jsonStr];
         try {
             $response = $client->request('POST',$this->baseUrl . 'metadata', $request);
             if ($response->getStatusCode()== 200 ) {
-                $body = (string)$response->getBody();
-                if ($body)  {
-                    return json_decode($body);
-                }
-
+                return json_decode((string) $response->getBody());
             } else {
                 return false;
             }

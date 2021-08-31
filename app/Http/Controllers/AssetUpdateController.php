@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 class AssetUpdateController extends Controller
 {
     protected $companyId = 1324004;
-    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MjkzMjAzMTgsIm5iZiI6MTYyOTMyMDMxOCwiZXhwIjoxNjI5MzIzOTE4LCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJabVUxWmpabE16aGtaREE1TkRnek5HWXhZalJoWTJRME4yVTNZakkxT0RjME5qSXgiLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiODY0MDA0IiwiY29tcGFueV9uYW1lIjoiREFaTiIsInRhZ3NfYXBpX3Rva2VuIjpudWxsLCJyb2xlcyI6WzEsMTAwMCwxMDA0LDEwMDYsMzUsMzYsMzNdLCJyZWdpb24iOiJldS1oaWx2ZXJzdW0tMSJ9fQ.UeXQWYjS7oD-e02pK-Vaft3c7Qa2QlCRLZQJRNrtf7A';
+    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzAzODY5NzEsIm5iZiI6MTYzMDM4Njk3MSwiZXhwIjoxNjMwMzkwNTc0LCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJNVEUxWXpCaU9XVmpOamMwT0dJNFptTTFOV1JsTkdGbE9EVXlOelJsT0RRelpESXciLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiODY0MDA0IiwiY29tcGFueV9uYW1lIjoiREFaTiIsInRhZ3NfYXBpX3Rva2VuIjpudWxsLCJyb2xlcyI6WzEsMTAwMCwxMDA0LDEwMDYsMzUsMzYsMzNdLCJyZWdpb24iOiJldS1oaWx2ZXJzdW0tMSJ9fQ.9_MvMbkI2awiITmFrfUcHHv33HUKKIfBvlZyKfcgNmg';
     protected $baseUri = 'https://map-api-eu1.mediabank.me/';
     protected $resourceUrl = 'asset/';
 
@@ -74,7 +74,7 @@ class AssetUpdateController extends Controller
     public function deleteQueue()
     {
         $deleted = 0;
-        $queue = Queue::where('done', false)->all();
+        $queue = Queue::where('done', false)->get();
         foreach ($queue as $q) {
             $q->delete();
             $deleted++;
@@ -86,16 +86,18 @@ class AssetUpdateController extends Controller
 
     public function runQueue()
     {
-        $queue = Queue::where('done', 'false')->take(500)->get();
+        $queue = Queue::where('done', 'false')->take(1)->get();
         $i = 0;
+
         foreach ($queue as $entry)  {
             $i++;
             $time_start = microtime(true);
             $item = json_decode($entry->item);
             $assetId = $item->assetId;
-            $assetMeta = $this->jsonFromHstore($item->metadata);
+            
             $integrationService = new SportRadarIntegrationClient();
-            $metadata = $integrationService->getMetadata($assetMeta);
+            $metadata = $integrationService->getMetadata($item->metadata);
+            var_dump($metadata); exit;
             if ($this->callMapApi($assetId, $metadata) !== false) {
                 $time_end = microtime(true);
                 $entry->done = true;
