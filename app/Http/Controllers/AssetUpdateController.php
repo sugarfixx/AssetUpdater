@@ -47,14 +47,14 @@ class AssetUpdateController extends Controller
             ->where('assetcompany_id', $this->companyId)
             ->get();
 
-        
+
         $processed = 0;
         foreach ($assets as $asset) {
             $metadata = $this->jsonFromHstore($asset->assetmeta);
             $item = json_encode([
-                    'assetId' => $asset->aasetid,
-                    'metadata' => $metadata
-                ]);
+                'assetId' => $asset->assetid,
+                'metadata' => $metadata
+            ]);
             $queue = new Queue();
             $queue->item = $item;
             $queue->done = false;
@@ -68,7 +68,19 @@ class AssetUpdateController extends Controller
 
     public function viewQueue()
     {
-        return response()->json(Queue::where('done', false)->get());
+        return response()->json(Queue::where('done', false)->first());
+    }
+
+    public function deleteQueue()
+    {
+        $deleted = 0;
+        $queue = Queue::where('done', false)->all();
+        foreach ($queue as $q) {
+            $q->delete();
+            $deleted++;
+        }
+        return \response()->json(['message' => $deleted . ' items was deleted from queue']);
+
     }
 
 
