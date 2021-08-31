@@ -9,10 +9,14 @@
             xmlHttp.send( null );
             return xmlHttp.responseText;
         }
-        const jsonString = httpGet('http://assetupdater.test/queue/run');
-        const obj = JSON.parse(jsonString);
-        if (obj)
-            console.log(obj.lenght);
+
+        window.setInterval(function () {
+            console.log('Starting fn240');
+            const jsonString = httpGet('http://assetupdater.test/queue/run');
+            const obj = JSON.parse(jsonString);
+            console.log(obj.length)
+        },240000);
+
     </script>
 </head>
 <body>
