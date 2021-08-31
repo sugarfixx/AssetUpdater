@@ -39,6 +39,7 @@ class RunAssetUpdater extends Command
      */
     public function handle()
     {
-
+        $assetUpdater = new AssetUpdater();
+        $this->info($assetUpdater->runQueue());
     }
 }

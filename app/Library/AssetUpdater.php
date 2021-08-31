@@ -21,6 +21,31 @@ class AssetUpdater
     protected $baseUri = 'https://map-api-eu1.mediabank.me/';
     protected $resourceUrl = 'asset/';
 
+    public function updateAsset($entry)
+    {
+        $time_start = microtime(true);
+        $item = json_decode($entry->item);
+        $assetId = $item->assetId;
+        $integrationService = new SportRadarIntegrationClient();
+        $metadata = $integrationService->getMetadata($item->metadata);
+
+        if ($this->callMapApi($assetId, $metadata) !== false) {
+            $time_end = microtime(true);
+            $entry->done = true;
+            if ($entry->save()) {
+                $message = 'Success: Asset ' . $assetId .' updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
+            } else {
+                $message = 'Success with incident: Asset ' . $assetId .' updated through map api but Queue done field update failed. TIME: ' . ($time_end - $time_start) . ' sec';
+            }
+        } else {
+            $time_end = microtime(true);
+            $message = 'Error: Asset ' . $assetId .' failed to be updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
+        }
+
+        Log::info($message);
+        return $message;
+    }
+
     public function runQueue()
     {
         $queue = Queue::where('done', 'false')->take(20)->get();
