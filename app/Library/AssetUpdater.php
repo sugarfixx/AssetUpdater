@@ -17,26 +17,19 @@ use GuzzleHttp\Exception\ServerException;
 class AssetUpdater
 {
     protected $companyId = 1324004;
-    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzA0MzAwODAsIm5iZiI6MTYzMDQzMDA4MCwiZXhwIjoxNjMwNDMzNjgyLCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJNVEUxWXpCaU9XVmpOamMwT0dJNFptTTFOV1JsTkdGbE9EVXlOelJsT0RRelpESXciLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiODY0MDA0IiwiY29tcGFueV9uYW1lIjoiREFaTiIsInRhZ3NfYXBpX3Rva2VuIjpudWxsLCJyb2xlcyI6WzEsMTAwMCwxMDA0LDEwMDYsMzUsMzYsMzNdLCJyZWdpb24iOiJldS1oaWx2ZXJzdW0tMSJ9fQ.x116qmr2IQP4FmegGHyylh-bZ6ZKjjGffKKvxypKz1s';
+    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzA0NTAyMzcsIm5iZiI6MTYzMDQ1MDIzNywiZXhwIjoxNjMwNDUzODM5LCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJNVEUxWXpCaU9XVmpOamMwT0dJNFptTTFOV1JsTkdGbE9EVXlOelJsT0RRelpESXciLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiMTMyNDAwNCIsImNvbXBhbnlfbmFtZSI6IlNwb3J0cmFkYXIiLCJ0YWdzX2FwaV90b2tlbiI6bnVsbCwicm9sZXMiOlsxLDEwMDAsMTAwNCwxMDA2LDIsNjksNzYsOTBdLCJyZWdpb24iOiJldS1ub3J3YXktMSJ9fQ.67gORh27ADkKCVn4r8vZKrMi0-KoLdssN4x0wQcd-as';
     protected $baseUri = 'https://map-api-eu1.mediabank.me/';
     protected $resourceUrl = 'asset/';
 
-    public function updateAsset($entry)
+    public function updateAsset($assetId, $metadata)
     {
         $time_start = microtime(true);
-        $item = json_decode($entry->item);
-        $assetId = $item->assetId;
         $integrationService = new SportRadarIntegrationClient();
-        $metadata = $integrationService->getMetadata($item->metadata);
+        $metadata = $integrationService->getMetadata($metadata);
 
         if ($this->callMapApi($assetId, $metadata) !== false) {
             $time_end = microtime(true);
-            $entry->done = true;
-            if ($entry->save()) {
-                $message = 'Success: Asset ' . $assetId .' updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
-            } else {
-                $message = 'Success with incident: Asset ' . $assetId .' updated through map api but Queue done field update failed. TIME: ' . ($time_end - $time_start) . ' sec';
-            }
+            $message = 'Success: Asset ' . $assetId .' updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
         } else {
             $time_end = microtime(true);
             $message = 'Error: Asset ' . $assetId .' failed to be updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';

@@ -8,6 +8,7 @@
 
 namespace App\Console\Commands;
 
+use App\Queue;
 use Illuminate\Console\Command;
 use App\Library\AssetUpdater;
 
@@ -40,6 +41,22 @@ class RunAssetUpdater extends Command
     public function handle()
     {
         $assetUpdater = new AssetUpdater();
-        $this->info($assetUpdater->runQueue());
+        $queue = Queue::where('done', 'false')->take(100)->get();
+
+        $bar = $this->output->createProgressBar(count($queue));
+        $bar->start();
+        $time_start = microtime(true);
+        foreach ($queue as $q) {
+            $item = json_decode($q->item);
+            $assetId = $item->assetId;
+            $metadata = $item->metadata;
+            $assetUpdater->updateAsset($assetId, $metadata);
+            $q->done = true;
+            $q->save();
+            $bar->advance();
+        }
+        $bar->finish();
+        $time_end = microtime(true);
+        $this->info(' Asset Updater Completed in: ' . ($time_end - $time_start) . ' seconds');
     }
 }
