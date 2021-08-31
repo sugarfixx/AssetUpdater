@@ -68,7 +68,8 @@ class AssetUpdateController extends Controller
 
     public function viewQueue()
     {
-        return response()->json(Queue::where('done', false)->first());
+        $queue = Queue::where('done', false)->get();
+        return response()->json(['lenght' => $queue->count()]);
     }
 
     public function deleteQueue()
@@ -86,7 +87,7 @@ class AssetUpdateController extends Controller
 
     public function runQueue()
     {
-        $queue = Queue::where('done', 'false')->take(1)->get();
+        $queue = Queue::where('done', 'false')->take(20)->get();
         $i = 0;
 
         foreach ($queue as $entry)  {
@@ -94,10 +95,10 @@ class AssetUpdateController extends Controller
             $time_start = microtime(true);
             $item = json_decode($entry->item);
             $assetId = $item->assetId;
-            
+
             $integrationService = new SportRadarIntegrationClient();
             $metadata = $integrationService->getMetadata($item->metadata);
-            var_dump($metadata); exit;
+
             if ($this->callMapApi($assetId, $metadata) !== false) {
                 $time_end = microtime(true);
                 $entry->done = true;
@@ -113,7 +114,9 @@ class AssetUpdateController extends Controller
             }
             Log::info($message);
         }
-        return response()->json(['message' => $i . ' items processed']);
+        return response()->json([
+            'number' => $i,
+            'message' => $i . ' items processed']);
     }
 
     public function callMapApi($assetId, $metadata)
