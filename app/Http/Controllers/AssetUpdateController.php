@@ -47,9 +47,10 @@ class AssetUpdateController extends Controller
             ->where('assetcompany_id', $this->companyId)
             ->get();
 
-        $metadata = $this->jsonFromHstore($assets->assetmeta);
+        
         $processed = 0;
         foreach ($assets as $asset) {
+            $metadata = $this->jsonFromHstore($asset->assetmeta);
             $item = json_encode([
                     'assetId' => $asset->aasetid,
                     'metadata' => $metadata
