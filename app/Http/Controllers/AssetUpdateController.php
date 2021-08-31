@@ -10,10 +10,12 @@ namespace App\Http\Controllers;
 
 
 use App\Asset;
+use App\Library\SportRadarIntegrationClient;
 use App\Queue;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
+use http\Env\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -40,12 +42,20 @@ class AssetUpdateController extends Controller
 
     public function buildQueue()
     {
-        $assets = Asset::on('pgsql')->where('assetcompany_id', $this->companyId)->get()->pluck('assetid');
+        $assets = Asset::on('pgsql')
+            ->select('assetid', 'assetmeta')
+            ->where('assetcompany_id', $this->companyId)
+            ->get();
+
+        $metadata = $this->jsonFromHstore($assets->assetmeta);
         $processed = 0;
         foreach ($assets as $asset) {
-            $message = json_encode(['assetId' => $asset]);
+            $item = json_encode([
+                    'assetId' => $asset->aasetid,
+                    'metadata' => $metadata
+                ]);
             $queue = new Queue();
-            $queue->item = $message;
+            $queue->item = $item;
             $queue->done = false;
             if ($queue->save()) {
                 $processed++;
@@ -67,25 +77,31 @@ class AssetUpdateController extends Controller
         $i = 0;
         foreach ($queue as $entry)  {
             $i++;
+            $time_start = microtime(true);
             $item = json_decode($entry->item);
             $assetId = $item->assetId;
-            if ($this->callMapApi($assetId) !== false) {
+            $assetMeta = $this->jsonFromHstore($item->metadata);
+            $integrationService = new SportRadarIntegrationClient();
+            $metadata = $integrationService->getMetadata($assetMeta);
+            if ($this->callMapApi($assetId, $metadata) !== false) {
+                $time_end = microtime(true);
                 $entry->done = true;
                 if ($entry->save()) {
-                    $message = 'Success: Asset ' . $assetId .' updated through map api';
+                    $message = 'Success: Asset ' . $assetId .' updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
                 } else {
-                    $message = 'Success with incident: Asset ' . $assetId .' updated through map api but Queue done field update failed';
+                    $message = 'Success with incident: Asset ' . $assetId .' updated through map api but Queue done field update failed. TIME: ' . ($time_end - $time_start) . ' sec';
                 }
 
             } else {
-                $message = 'Error: Asset ' . $assetId .' failed to be updated through map api';
+                $time_end = microtime(true);
+                $message = 'Error: Asset ' . $assetId .' failed to be updated through map api. TIME: ' . ($time_end - $time_start) . ' sec';
             }
             Log::info($message);
         }
         return response()->json(['message' => $i . ' items processed']);
     }
 
-    public function callMapApi($assetId)
+    public function callMapApi($assetId, $metadata)
     {
         $client = new Client(['base_uri' => $this->baseUri]);
         $request = [
@@ -95,7 +111,7 @@ class AssetUpdateController extends Controller
             ],
             'form_params' => [
                 'id' => $assetId,
-                'metadata' => json_encode(['updatedBy' => 'AssetUpdater']),
+                'metadata' => json_encode($metadata),
                 'notify' => 0
             ]
         ];
@@ -114,5 +130,21 @@ class AssetUpdateController extends Controller
         } catch (\Exception $e) {
             Log::info($e->getMessage());
         }
+    }
+
+    public function jsonFromHstore($data)
+    {
+        preg_match_all('/(?:"((?:\\\\"|[^"])+)"|(\w+))\s*=>\s*(?:"((?:\\\\"|[^"])*)"|(NULL))/ms',
+            $data, $matches, PREG_SET_ORDER);
+        $hstore = array();
+
+        foreach ($matches as $set) {
+
+            $key = $set[1] ? $set[1] : $set[2];
+            $val = (array_key_exists(4, $set) &&  $set[4]=='NULL') ? null : $set[3];
+            $hstore[$key] = $val;
+        }
+        return json_encode($hstore);
+         //return json_decode('{' . str_replace('"=>"', '":"', $hstore) . '}');
     }
 }
