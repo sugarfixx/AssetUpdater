@@ -41,7 +41,7 @@ class RunAssetUpdater extends Command
     public function handle()
     {
         $assetUpdater = new AssetUpdater();
-        $queue = Queue::where('done', 'false')->take(100)->get();
+        $queue = Queue::where('done', 'false')->take(1000)->get();
 
         $bar = $this->output->createProgressBar(count($queue));
         $bar->start();
