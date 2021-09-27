@@ -17,6 +17,9 @@ $router->get('/', function () use ($router) {
 $router->get('/poll', function () {
     return view('poll');
 });
+
+$router->get('/find', 'QueueController@findInItem');
+
 $router->group(['prefix' => 'update'], function () use ($router) {
     $router->get('/count', 'AssetUpdateController@getCount');
     $router->get('/build', 'AssetUpdateController@buildQueue');
