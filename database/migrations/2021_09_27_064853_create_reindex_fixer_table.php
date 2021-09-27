@@ -15,6 +15,11 @@ class CreateReindexFixerTable extends Migration
     {
         Schema::create('reindex_fixer', function (Blueprint $table) {
             $table->id();
+            $table->integer('queue_id');
+            $table->bigInteger('asset_id');
+            $table->json('metadata');
+            $table->json('item');
+            $table->boolean('done');
             $table->timestamps();
         });
     }
