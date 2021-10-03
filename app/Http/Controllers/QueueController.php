@@ -97,7 +97,7 @@ class QueueController extends Controller
     {
         $searchPhrase = "27110156";
         $result = [];
-        $matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(0)->limit(10)->get();
+        $matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(1400)->limit(100)->get();
         foreach ($matches as $m) {
             $item = json_decode($m->item);
             $result[] = $item->assetId;
@@ -111,12 +111,14 @@ class QueueController extends Controller
                 if (property_exists($item, 'metadata') &&
                     $this->hasSearchPhrase($item, $searchPhrase) !== true)
                 {
-                    $filtered[] = [
+                    $array = [
                         'assetID' => $assetId,
                         'queueID' => $e->id,
                         'metadata' =>json_decode($item->metadata),
                         'item' => $item
                     ];
+                    $this->addToReindex($array);
+                    $filtered[] = $array;
                 }
             }
         }
