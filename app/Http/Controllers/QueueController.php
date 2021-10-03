@@ -9,13 +9,21 @@
 namespace App\Http\Controllers;
 
 
-use App\Library\SportRadarIntegrationClient;
+
 use App\Queue;
 use App\ReindexFixxer;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Facades\Log;
 
 class QueueController extends Controller
 {
+    protected $companyId = 1324004;
+    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzMyNjc0OTEsIm5iZiI6MTYzMzI2NzQ5MSwiZXhwIjoxNjMzMjcxMDkzLCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJOR1F5WlRGalkyRTJPVEkwTXpSbE1ERmpZbVkzTXpKa01XUmxNemszTkdVd1pqTTEiLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiMTMyNDAwNCIsImNvbXBhbnlfbmFtZSI6IlNwb3J0cmFkYXIiLCJ0YWdzX2FwaV90b2tlbiI6bnVsbCwicm9sZXMiOlsxLDEwMDAsMTAwNCwxMDA2LDIsNjksNzYsOTBdLCJyZWdpb24iOiJldS1ub3J3YXktMSJ9fQ.VYqo3QXxkYKVKBu5mOcWBqoHYR4lFdnVBXVlDjg8ET4';
+    protected $baseUri = 'https://map-api-eu1.mediabank.me/';
+    protected $resourceUrl = 'asset/';
+
     public function findInItem()
     {
 
@@ -149,10 +157,26 @@ class QueueController extends Controller
 
     public function runReIndexer()
     {
-        $queue = ReindexFixxer::where('done', false)->get();
-        var_dump(count($queue));
+        $queue = ReindexFixxer::where('done', false)->take(2)->get();
 
-        $integration = new SportRadarIntegrationClient();
+        $i = 0;
+        $success = 0;
+        foreach ($queue as $q) {
+            $i++;
+            Log::info('Updating asset with id: ' . $q->asset_id. ' using MAP API');
+            $apiCall = $this->callMapApi($q->asset_id, $q->metadata);
+            if ($apiCall) {
+                $q->done = true;
+                if ($q->save()) {
+                    $success++;
+                    Log::info('Successfully Updated asset with id: ' . $q->asset_id. ' in MAP');
+                }
+            }
+        }
+
+        return response()->json([
+            'number' => $i,
+            'message' => $success . ' items processed successfully']);
 
     }
 
