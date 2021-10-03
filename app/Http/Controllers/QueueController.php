@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Library\SportRadarIntegrationClient;
 use App\Queue;
 use App\ReindexFixxer;
 use Illuminate\Support\Facades\Log;
@@ -150,6 +151,40 @@ class QueueController extends Controller
     {
         $queue = ReindexFixxer::where('done', false)->get();
         var_dump(count($queue));
+
+        $integration = new SportRadarIntegrationClient();
+
+    }
+
+    public function callMapApi($assetId, $metadata)
+    {
+        $client = new Client(['base_uri' => $this->baseUri]);
+        $request = [
+            'headers' => [
+                'Authorization' => $this->jwtToken,
+                'MAP-Application'  => 'library'
+            ],
+            'form_params' => [
+                'id' => $assetId,
+                'metadata' => json_encode($metadata),
+                'notify' => 0
+            ]
+        ];
+
+        try {
+            $response = $client->request('PUT', $this->resourceUrl, $request);
+            if ($response->getStatusCode()== 200 ) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (ClientException $e) {
+            Log::info($e->getMessage());
+        } catch (ServerException $e ) {
+            Log::info($e->getMessage());
+        } catch (\Exception $e) {
+            Log::info($e->getMessage());
+        }
     }
 
     public function jsonFromHstore($data)
