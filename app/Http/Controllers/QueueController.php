@@ -146,6 +146,12 @@ class QueueController extends Controller
         Log::info($message);
     }
 
+    public function runReIndexer()
+    {
+        $queue = ReindexFixxer::where('done', false)->get();
+        var_dump(count($queue));
+    }
+
     public function jsonFromHstore($data)
     {
         preg_match_all('/(?:"((?:\\\\"|[^"])+)"|(\w+))\s*=>\s*(?:"((?:\\\\"|[^"])*)"|(NULL))/ms',
