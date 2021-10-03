@@ -106,7 +106,12 @@ class QueueController extends Controller
     {
         $searchPhrase = "27110156";
         $result = [];
-        $matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(1400)->limit(100)->get();
+        // first we found all that was indexed with wrong data
+        // $matches = Queue::where('done', false)->where('item', 'LIKE', "%{$searchPhrase}%")->offset(0)->limit(100)->get();
+
+        // then we need to find the ones that was not re-indexed that does NOT include the wrong data
+        $matches = Queue::where('done', false)->where('item', 'NOT LIKE', "%{$searchPhrase}%")->offset(0)->limit(100)->get();
+
         foreach ($matches as $m) {
             $item = json_decode($m->item);
             $result[] = $item->assetId;
@@ -157,7 +162,7 @@ class QueueController extends Controller
 
     public function runReIndexer()
     {
-        $queue = ReindexFixxer::where('done', false)->take(2)->get();
+        $queue = ReindexFixxer::where('done', false)->take(100)->get();
 
         $i = 0;
         $success = 0;
