@@ -20,6 +20,7 @@ $router->get('/poll', function () {
 
 // $router->get('/find', 'QueueController@findInItemNew');
 $router->get('/find', 'QueueController@findInItem');
+$router->get('/mod', 'QueueController@reindexWithModifiedMetadata');
 $router->get('/run_re_indexer', 'QueueController@runReIndexer');
 $router->group(['prefix' => 'update'], function () use ($router) {
     $router->get('/count', 'AssetUpdateController@getCount');

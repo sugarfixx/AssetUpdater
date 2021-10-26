@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 class QueueController extends Controller
 {
     protected $companyId = 1324004;
-    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzMyNjc0OTEsIm5iZiI6MTYzMzI2NzQ5MSwiZXhwIjoxNjMzMjcxMDkzLCJ1c2VySWQiOjcxNDEwMDEsInRhZ3NBcGlUb2tlbiI6bnVsbCwiYXBpVG9rZW4iOiJOR1F5WlRGalkyRTJPVEkwTXpSbE1ERmpZbVkzTXpKa01XUmxNemszTkdVd1pqTTEiLCJ1c2VyIjp7InVzZXJpZCI6NzE0MTAwMSwidXNlcm5hbWUiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJmdWxsbmFtZSI6IkluZ2FyIFRvcnNydWQgKE1lZGlhYmFuaykiLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJpdG9yc3J1ZEBuZXBncm91cC5jb20iLCJjb21wYW55X2lkIjoiMTMyNDAwNCIsImNvbXBhbnlfbmFtZSI6IlNwb3J0cmFkYXIiLCJ0YWdzX2FwaV90b2tlbiI6bnVsbCwicm9sZXMiOlsxLDEwMDAsMTAwNCwxMDA2LDIsNjksNzYsOTBdLCJyZWdpb24iOiJldS1ub3J3YXktMSJ9fQ.VYqo3QXxkYKVKBu5mOcWBqoHYR4lFdnVBXVlDjg8ET4';
+    protected $jwtToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtZWRpYWJhbmsubWUiLCJhdWQiOiJtZWRpYWJhbmsubWUiLCJpYXQiOjE2MzUyMjY0OTYsIm5iZiI6MTYzNTIyNjQ5NiwiZXhwIjoxNjM1MjMyMTY1LCJ1c2VySWQiOiI3MTQxMDAxIiwidGFnc0FwaVRva2VuIjoieWYzQWswN21UR3A3YktcL25hNmt2I1JRNUFcL0w5NFBQRVhkTWFSbGNLOCIsImFwaVRva2VuIjoiT0RJd1pXTTJNekU0TVRFNE56UTFaakkwWlRVd05qVTBNRGs0WW1WaE56TmlOVFEzIiwidXNlciI6eyJ1c2VyaWQiOiI3MTQxMDAxIiwidXNlcm5hbWUiOiJpbmdhciIsImZ1bGxuYW1lIjoiSW5nYXIgVG9yc3J1ZCAoTWVkaWFiYW5rKSIsInBob25lIjpudWxsLCJlbWFpbCI6Iml0b3JzcnVkQG5lcGdyb3VwLmNvbSIsImNvbXBhbnlfaWQiOiIzMDA2IiwiY29tcGFueV9uYW1lIjoiTkVQIE1lZGlhIFNlcnZpY2VzIiwidGFnc19hcGlfdG9rZW4iOiJ5ZjNBazA3bVRHcDdiS1wvbmE2a3YjUlE1QVwvTDk0UFBFWGRNYVJsY0s4Iiwicm9sZXMiOlsxLDEwMDAsMTAwNCwxMDA2LDc5LDIsMyw0LDUsNiw3LDI5LDMwLDMyLDMzLDM0LDM1LDM2LDM4LDM5LDQwLDQxLDQ4LDQ5LDUwLDUxLDUyLDUzLDU0LDU1XSwicmVnaW9uIjoiZXUtbm9yd2F5LTEifX0.m6aP5eftKI7ltuJBRIJ_OxsiW_OQqGQ1PjtEUAkxVzk';
     protected $baseUri = 'https://map-api-eu1.mediabank.me/';
     protected $resourceUrl = 'asset/';
 
@@ -37,12 +37,51 @@ class QueueController extends Controller
         10096874004
     ];
 
+    protected $noExtId = [
+        10102452004,
+        10102358004,
+        10102358004,
+        10102306004,
+        10097843004,
+        10097786004,
+        10096905004,
+        10096874004
+    ];
+
+    public function reindexWithModifiedMetadata()
+    {
+        // these are untouched
+        // $matches = ReindexFixxer::whereIn('asset_id', $this->noExtId)->get();
+        // return response()->json($matches);
+
+        // test one asset id 10102499004
+        // $call = $this->callMapApi(10102499004, ['ExternalMatchId' => '']);
+        // var_dump($call);
+        // exit;
+
+        // Loop through and set correct value
+        // foreach ($this->noExtId as $assetId) {
+        //     $this->callMapApi($assetId, ['ExternalMatchId' => '']);
+        // }
+        // echo "Done";
+
+        // final one 10102356004
+        $final = ReindexFixxer::where('asset_id',10102356004)->first();
+        $metadata = $final->metadata;
+        $metadata['ExternalMatchId'] = '';
+        $this->callMapApi($final->asset_id, $metadata);
+        // var_dump($metadata);
+
+        return response()->json($metadata);
+
+    }
+
     public function findInItem()
     {
 
         // $searchPhrase = "27110156";
         // $searchPhrase = 'BG PATHUM UNITED,VIETTEL FC';
-        $searchPhrase = (string) $this->assetIDS[1];
+        $searchPhrase = (string) $this->assetIDS[0];
         $result = [];
         //$matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(100)->limit(10)->get();
         // $matches = Queue::where('item', 'LIKE', "%metadata%")->where('item', 'LIKE', "%{$searchPhrase}%")->get();
