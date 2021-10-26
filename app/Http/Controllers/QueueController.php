@@ -24,19 +24,41 @@ class QueueController extends Controller
     protected $baseUri = 'https://map-api-eu1.mediabank.me/';
     protected $resourceUrl = 'asset/';
 
+    protected $assetIDS = [
+        10102499004,
+        10102452004,
+        10102358004,
+        10102356004,
+        10102309004,
+        10102306004,
+        10097843004,
+        10097786004,
+        10096905004,
+        10096874004
+    ];
+
     public function findInItem()
     {
 
-        $searchPhrase = "27110156";
+        // $searchPhrase = "27110156";
         // $searchPhrase = 'BG PATHUM UNITED,VIETTEL FC';
+        $searchPhrase = (string) $this->assetIDS[1];
         $result = [];
-        $matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(100)->limit(10)->get();
+        //$matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->offset(100)->limit(10)->get();
         // $matches = Queue::where('item', 'LIKE', "%metadata%")->where('item', 'LIKE', "%{$searchPhrase}%")->get();
-        // var_dump(count($matches)); exit;
+        $matches = Queue::where('item', 'LIKE', "%{$searchPhrase}%")->get();
+        // var_dump($matches); exit;
+
+
+
         foreach ($matches as $m) {
             $item = json_decode($m->item);
-            $result[] = $item->assetId;
+            if (isset($item->metadata)) {
+                $result[] = json_decode($item->metadata);
+            }
+
         }
+        return response()->json($result);
         $filtered =[];
         foreach ($result as $assetId) {
             $entries = Queue::where('item', 'LIKE', "%{$assetId}%")->get();
@@ -109,8 +131,8 @@ class QueueController extends Controller
         // first we found all that was indexed with wrong data
         // $matches = Queue::where('done', false)->where('item', 'LIKE', "%{$searchPhrase}%")->offset(0)->limit(100)->get();
 
-        // then we need to find the ones that was not re-indexed that does NOT include the wrong data
-        $matches = Queue::where('done', false)->where('item', 'NOT LIKE', "%{$searchPhrase}%")->offset(0)->limit(100)->get();
+        // then we need to find the 1235 that was not re-indexed that does NOT include the wrong data
+        $matches = Queue::where('done', false)->where('item', 'NOT LIKE', "%{$searchPhrase}%")->offset(1200)->limit(100)->get();
 
         foreach ($matches as $m) {
             $item = json_decode($m->item);
